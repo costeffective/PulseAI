@@ -51,9 +51,10 @@ Pulse gives ops and product teams a lightweight workflow:
 | **Batch summaries** | Gemini generates a short narrative summary per upload |
 | **Batch chat** | Ask questions about a specific batch ("What are the top UX complaints?") |
 | **Integrations** | Google Forms via Sheets — OAuth connect, 15-min auto-sync, manual sync |
+| **Smart file parsing** | Auto-detects feedback columns in CSV/XLSX exports |
 | **Filtering** | One-click filters for sentiment, priority, and category |
 | **Batch history** | Switch between uploads and compare negative %, top themes, and high-priority counts |
-| **Auth** | Supabase email magic link — no passwords to manage |
+| **Auth** | Supabase email/password or magic link |
 | **Dark mode** | System-aware theme toggle |
 
 ---
@@ -232,7 +233,7 @@ docs/                         # Integration roadmap
 
 ## Roadmap
 
-See [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md) for a planned ingestion layer — Google Forms, Typeform, Tally webhooks, and scheduled sync jobs.
+See [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md) for Google Forms setup and the roadmap for Typeform, Tally, and webhooks.
 
 ---
 
