@@ -66,7 +66,7 @@ Reuse `src/lib/csv.ts` column detection for webhook JSON payloads.
 
 1. Form responses sync to a linked Google Sheet
 2. Pulse OAuth (read-only Sheets scope)
-3. Vercel cron polls active connections every 15 minutes
+3. GitHub Actions polls active connections every 15 minutes (Vercel Hobby does not support sub-daily crons)
 4. Reuses `src/lib/csv.ts` column detection on sheet rows
 5. Appends new responses to one persistent AI-classified batch per connection
 
@@ -78,6 +78,7 @@ Reuse `src/lib/csv.ts` column detection for webhook JSON payloads.
 2. Create Google Cloud OAuth credentials (Web application)
 3. Add redirect URI: `https://your-domain/api/integrations/google/callback`
 4. Set env vars: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`
+5. Add GitHub repo secrets: `CRON_SECRET` (same value) and `PULSE_APP_URL` (e.g. `https://pulse-ai-dash.vercel.app`)
 5. In Google Forms: Responses → Link to Sheets
 6. Connect the sheet in Pulse → Integrations
 
