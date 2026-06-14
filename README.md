@@ -2,6 +2,8 @@
 
 **Turn scattered customer feedback into a clear action list.**
 
+**Live demo:** [pulse-eta-woad.vercel.app](https://pulse-eta-woad.vercel.app)
+
 Pulse is an AI-powered feedback triage app for small product teams. Upload a CSV, paste responses, or drop in a spreadsheet — Gemini classifies every item by category, sentiment, and priority, then surfaces trends across batches over time.
 
 Built as a full-stack portfolio project: auth, database, AI pipeline, dashboard UX, and production deployment patterns.
