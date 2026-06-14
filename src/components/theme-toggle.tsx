@@ -12,7 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ThemeToggle() {
+import { cn } from "@/lib/utils";
+
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -28,7 +30,10 @@ export function ThemeToggle() {
             variant="outline"
             size="sm"
             aria-label="Toggle theme"
-            className="size-8 shrink-0 border-transparent bg-transparent px-0 shadow-none hover:bg-black/5 dark:hover:bg-white/10"
+            className={cn(
+              "size-8 shrink-0 rounded-full border-transparent bg-transparent px-0 shadow-none hover:bg-black/5 dark:hover:bg-white/10",
+              className,
+            )}
           />
         }
       >

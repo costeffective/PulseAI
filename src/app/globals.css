@@ -73,7 +73,7 @@
   --chart-3: oklch(0.68 0.15 45);
   --chart-4: oklch(0.58 0.18 25);
   --chart-5: oklch(0.52 0.08 300);
-  --radius: 0.75rem;
+  --radius: 1rem;
   --sidebar: oklch(0.99 0.003 75);
   --sidebar-foreground: oklch(0.21 0.02 265);
   --sidebar-primary: oklch(0.36 0.09 265);
@@ -198,6 +198,7 @@
 }
 
 .glass-dock {
+  border-radius: 9999px;
   border: 1px solid oklch(0 0 0 / 0.06);
   background: oklch(1 0 0 / 0.72);
   box-shadow:
@@ -205,6 +206,7 @@
     0 8px 32px oklch(0 0 0 / 0.08),
     inset 0 1px 0 oklch(1 0 0 / 0.8);
   backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .dark .glass-dock {
@@ -218,7 +220,7 @@
 .glass-dock-actions {
   border-radius: 9999px;
   background: oklch(0 0 0 / 0.04);
-  padding: 0.125rem;
+  align-items: center;
 }
 
 .dark .glass-dock-actions {

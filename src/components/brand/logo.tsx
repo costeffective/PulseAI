@@ -21,7 +21,7 @@ export function Logo({
     <div className={cn("flex items-center", isSmall ? "gap-2" : "gap-2.5", className)}>
       <div
         className={cn(
-          "relative flex shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground shadow-[0_1px_2px_oklch(0.25_0.06_265/0.18),inset_0_1px_0_oklch(1_0_0/0.12)] ring-1 ring-primary/25",
+          "relative flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground shadow-[0_1px_2px_oklch(0.25_0.06_265/0.18),inset_0_1px_0_oklch(1_0_0/0.12)] ring-1 ring-primary/25",
           isSmall ? "size-8" : "size-9",
           isLight && "from-white via-white to-white/90 text-black ring-white/20 shadow-none",
         )}
