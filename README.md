@@ -139,8 +139,8 @@ Useful for evaluating full-stack and AI integration skills:
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/costeffective/feedbackpilot.git
-cd feedbackpilot
+git clone https://github.com/costeffective/pulse.git
+cd pulse
 npm install
 ```
 
