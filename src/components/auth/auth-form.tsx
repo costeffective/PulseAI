@@ -13,6 +13,7 @@ import {
   Mail,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -289,6 +290,16 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
           </p>
         </div>
 
+        <GoogleSignInButton
+          label={isSignup ? "Sign up with Google" : "Sign in with Google"}
+        />
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border/60" />
+          <span className="text-xs font-medium text-muted-foreground">or use email</span>
+          <div className="h-px flex-1 bg-border/60" />
+        </div>
+
         <form onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Work email</Label>
@@ -412,8 +423,8 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
 
       <p className="mt-6 text-center font-sans text-xs leading-5 text-muted-foreground">
         {usesPassword
-          ? "Your password is stored securely by Supabase Auth."
-          : "We'll send a one-time sign-in link to your inbox. No password needed."}
+          ? "Passwords are stored securely by Supabase Auth."
+          : "We'll send a one-time sign-in link to your inbox."}
       </p>
     </div>
   );

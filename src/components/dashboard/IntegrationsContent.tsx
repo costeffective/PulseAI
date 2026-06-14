@@ -127,7 +127,10 @@ export function IntegrationsContent() {
 
     const newRows = data.result?.newRows ?? 0;
     if (newRows > 0) {
-      setNotice(`Synced ${newRows} new response${newRows === 1 ? "" : "s"} into a new batch.`);
+      const target = data.result?.createdBatch ? "a new batch" : "the existing batch";
+      setNotice(
+        `Synced ${newRows} new response${newRows === 1 ? "" : "s"} into ${target}.`,
+      );
     } else {
       setNotice("No new form responses since the last sync.");
     }
@@ -183,7 +186,7 @@ export function IntegrationsContent() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Connect a Google Form via its linked response sheet. Pulse polls for new
-            rows every 15 minutes and creates AI-classified batches automatically.
+            rows every 15 minutes and adds them to one persistent batch per connection.
           </p>
         </div>
 
@@ -284,6 +287,14 @@ export function IntegrationsContent() {
                         ? ` · ${connection.last_synced_row} rows processed`
                         : ""}
                     </p>
+                    {connection.batch_id && (
+                      <Link
+                        href={`/dashboard?batch=${connection.batch_id}`}
+                        className="inline-flex text-xs font-medium text-primary hover:underline"
+                      >
+                        View linked batch
+                      </Link>
+                    )}
                     {connection.last_error && (
                       <p className="text-xs text-destructive">{connection.last_error}</p>
                     )}

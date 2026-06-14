@@ -68,7 +68,7 @@ Reuse `src/lib/csv.ts` column detection for webhook JSON payloads.
 2. Pulse OAuth (read-only Sheets scope)
 3. Vercel cron polls active connections every 15 minutes
 4. Reuses `src/lib/csv.ts` column detection on sheet rows
-5. Creates incremental AI-classified batches
+5. Appends new responses to one persistent AI-classified batch per connection
 
 **Dashboard:** `/dashboard/integrations`
 

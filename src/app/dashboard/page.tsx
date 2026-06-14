@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Inbox, Plus } from "lucide-react";
 import { BatchChatPanel } from "@/components/dashboard/BatchChatPanel";
 import { BatchInsights } from "@/components/dashboard/BatchInsights";
@@ -38,6 +38,8 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preferredBatchId = searchParams.get("batch");
   const [batches, setBatches] = useState<BatchListItem[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<BatchWithItems | null>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
@@ -131,8 +133,8 @@ export default function DashboardPage() {
   );
 
   useEffect(() => {
-    void refreshBatches();
-  }, [refreshBatches]);
+    void refreshBatches(preferredBatchId ?? undefined);
+  }, [refreshBatches, preferredBatchId]);
 
   const stats = useMemo(
     () => computeBatchStats(selectedBatch?.items ?? []),

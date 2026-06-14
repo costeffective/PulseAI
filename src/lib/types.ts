@@ -89,6 +89,7 @@ export interface IntegrationConnection {
   sheet_name: string;
   last_synced_at: string | null;
   last_synced_row: number;
+  batch_id: string | null;
   last_error: string | null;
   created_at: string;
   updated_at: string;

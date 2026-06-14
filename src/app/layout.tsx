@@ -4,9 +4,22 @@ import { bricolage, instrumentSerif, plusJakarta } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pulse",
+  title: {
+    default: "Pulse",
+    template: "%s · Pulse",
+  },
   description:
     "AI-powered feedback triage and tracking for small teams.",
+  icons: {
+    icon: [{ url: "/brand/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
+  },
+  openGraph: {
+    title: "Pulse",
+    description:
+      "AI-powered feedback triage and tracking for small teams.",
+    images: [{ url: "/brand/logo.svg", width: 168, height: 40, alt: "Pulse" }],
+  },
 };
 
 export default function RootLayout({

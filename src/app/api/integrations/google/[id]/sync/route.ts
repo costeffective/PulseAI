@@ -20,7 +20,7 @@ export async function POST(
   const { data: connection, error } = await supabase
     .from("integration_connections")
     .select(
-      "id, user_id, name, status, spreadsheet_id, sheet_name, credentials, last_synced_at, last_synced_row",
+      "id, user_id, name, status, spreadsheet_id, sheet_name, credentials, batch_id, last_synced_at, last_synced_row",
     )
     .eq("id", id)
     .eq("user_id", user.id)

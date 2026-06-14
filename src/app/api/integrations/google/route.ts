@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { IntegrationConnectionListItem } from "@/lib/types";
 
 const PUBLIC_FIELDS =
-  "id, provider, name, status, spreadsheet_id, sheet_name, last_synced_at, last_synced_row, last_error, created_at, updated_at";
+  "id, provider, name, status, spreadsheet_id, sheet_name, batch_id, last_synced_at, last_synced_row, last_error, created_at, updated_at";
 
 export async function GET() {
   const supabase = await createClient();

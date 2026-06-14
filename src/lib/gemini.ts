@@ -211,6 +211,17 @@ async function generateSummary(
   return validated.data.summary.trim();
 }
 
+export async function summarizeClassifiedFeedback(
+  items: Array<{
+    text: string;
+    category: string;
+    sentiment: string;
+    priority: string;
+  }>,
+) {
+  return generateSummary(items);
+}
+
 export async function classifyFeedbackBatch(items: string[]) {
   if (items.length === 0) {
     throw new Error("At least one feedback item is required");

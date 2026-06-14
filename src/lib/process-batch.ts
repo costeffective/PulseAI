@@ -1,8 +1,13 @@
-import { classifyFeedbackBatch } from "@/lib/gemini";
+import {
+  classifyFeedbackBatch,
+  summarizeClassifiedFeedback,
+} from "@/lib/gemini";
 import type { createClient } from "@/lib/supabase/server";
 import type { BatchSubmitItem } from "@/lib/types";
 
 type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
+
+const MAX_BATCH_SIZE = 200;
 
 function isMissingMetadataColumn(message: string) {
   return /metadata/i.test(message) && /column|schema cache/i.test(message);
@@ -19,15 +24,16 @@ async function insertFeedbackItems(
     priority: string;
   }>,
   sourceItems: BatchSubmitItem[],
+  lineIndexOffset = 0,
 ) {
-  const rowsWithMetadata = classifiedItems.map((item) => ({
+  const rowsWithMetadata = classifiedItems.map((item, index) => ({
     batch_id: batchId,
-    line_index: item.line_index,
+    line_index: lineIndexOffset + item.line_index,
     text: item.text,
     category: item.category,
     sentiment: item.sentiment,
     priority: item.priority,
-    metadata: sourceItems[item.line_index]?.metadata ?? {},
+    metadata: sourceItems[index]?.metadata ?? {},
   }));
 
   const withMetadata = await supabase
@@ -40,9 +46,9 @@ async function insertFeedbackItems(
     throw new Error(withMetadata.error.message);
   }
 
-  const rowsWithoutMetadata = classifiedItems.map((item) => ({
+  const rowsWithoutMetadata = classifiedItems.map((item, index) => ({
     batch_id: batchId,
-    line_index: item.line_index,
+    line_index: lineIndexOffset + item.line_index,
     text: item.text,
     category: item.category,
     sentiment: item.sentiment,
@@ -55,6 +61,35 @@ async function insertFeedbackItems(
 
   if (withoutMetadata.error) {
     throw new Error(withoutMetadata.error.message);
+  }
+}
+
+async function refreshBatchSummary(
+  supabase: ServerSupabase,
+  batchId: string,
+) {
+  const { data: items, error } = await supabase
+    .from("feedback_items")
+    .select("text, category, sentiment, priority")
+    .eq("batch_id", batchId)
+    .order("line_index", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const summary = await summarizeClassifiedFeedback(items ?? []);
+
+  const { error: updateError } = await supabase
+    .from("batches")
+    .update({
+      summary,
+      status: "completed",
+    })
+    .eq("id", batchId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
   }
 }
 
@@ -109,5 +144,75 @@ export async function processBatchFromItems(
     throw processingError instanceof Error
       ? processingError
       : new Error("Batch processing failed");
+  }
+}
+
+export async function appendItemsToBatch(
+  supabase: ServerSupabase,
+  batchId: string,
+  items: BatchSubmitItem[],
+): Promise<{ batchId: string; addedCount: number }> {
+  if (items.length === 0) {
+    throw new Error("At least one feedback item is required");
+  }
+
+  const { count: existingCount, error: countError } = await supabase
+    .from("feedback_items")
+    .select("id", { count: "exact", head: true })
+    .eq("batch_id", batchId);
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  const totalAfterAppend = (existingCount ?? 0) + items.length;
+  if (totalAfterAppend > MAX_BATCH_SIZE) {
+    throw new Error(
+      `Batch would exceed the ${MAX_BATCH_SIZE} item limit. Sync skipped.`,
+    );
+  }
+
+  const { data: lastItem, error: lastItemError } = await supabase
+    .from("feedback_items")
+    .select("line_index")
+    .eq("batch_id", batchId)
+    .order("line_index", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastItemError) {
+    throw new Error(lastItemError.message);
+  }
+
+  const nextLineIndex = (lastItem?.line_index ?? -1) + 1;
+
+  await supabase
+    .from("batches")
+    .update({ status: "processing" })
+    .eq("id", batchId);
+
+  try {
+    const result = await classifyFeedbackBatch(items.map((item) => item.text));
+
+    await insertFeedbackItems(
+      supabase,
+      batchId,
+      result.items,
+      items,
+      nextLineIndex,
+    );
+
+    await refreshBatchSummary(supabase, batchId);
+
+    return { batchId, addedCount: items.length };
+  } catch (processingError) {
+    await supabase
+      .from("batches")
+      .update({ status: "failed" })
+      .eq("id", batchId);
+
+    throw processingError instanceof Error
+      ? processingError
+      : new Error("Failed to append items to batch");
   }
 }

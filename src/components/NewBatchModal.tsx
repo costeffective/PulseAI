@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileUp, Loader2, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FileUp, Loader2, Sheet, Sparkles } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ interface NewBatchModalProps {
 }
 
 export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
+  const router = useRouter();
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [uploadHint, setUploadHint] = useState<string | null>(null);
@@ -108,6 +110,13 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
     }
   };
 
+  const handleConnectGoogleForms = () => {
+    if (isSubmitting) return;
+    reset();
+    onClose();
+    router.push("/dashboard/integrations");
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-2xl">
@@ -123,6 +132,31 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
         </DialogHeader>
 
         <div className="space-y-5 px-6 py-5">
+          <button
+            type="button"
+            onClick={handleConnectGoogleForms}
+            disabled={isSubmitting}
+            className="flex w-full items-start gap-4 rounded-2xl border border-border/60 bg-muted/20 p-4 text-left transition-colors hover:bg-muted/40 disabled:opacity-50"
+          >
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+              <Sheet className="size-4.5" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-sans text-sm font-semibold text-foreground">
+                Connect Google Forms
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Link a response sheet and auto-sync new submissions every 15 minutes.
+              </p>
+            </div>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border/60" />
+            <span className="text-xs font-medium text-muted-foreground">or add manually</span>
+            <div className="h-px flex-1 bg-border/60" />
+          </div>
+
           <div className="space-y-2.5">
             <Label htmlFor="batch-name" className="text-sm font-medium">
               Batch name (optional)
