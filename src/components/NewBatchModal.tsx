@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileUp, Loader2, Sheet, Sparkles } from "lucide-react";
+import { FileUp, Loader2, Sheet, Sparkles, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,19 +30,19 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [name, setName] = useState("");
-  const [uploadHint, setUploadHint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parsedItems, setParsedItems] = useState<BatchSubmitItem[] | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
     setText("");
     setName("");
-    setUploadHint(null);
     setError(null);
     setIsSubmitting(false);
     setParsedItems(null);
+    setUploadedFile(null);
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -57,26 +57,23 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
       setError(null);
       const items = await extractItemsFromUpload(file);
       setParsedItems(items);
-      setText(items.map((item) => item.text).join("\n"));
-
-      const withMetadata = items.filter(
-        (item) => Object.keys(item.metadata).length > 0,
-      ).length;
-
-      setUploadHint(
-        withMetadata > 0
-          ? `Imported ${items.length} rows. Detected feedback column and preserved extra fields (name, email, etc.) for ${withMetadata} items.`
-          : `Imported ${items.length} feedback items from ${file.name}.`,
-      );
+      setUploadedFile(file);
+      setText("");
     } catch (uploadError) {
       setParsedItems(null);
-      setUploadHint(null);
+      setUploadedFile(null);
       setError(
         uploadError instanceof Error
           ? uploadError.message
           : "Could not read file",
       );
     }
+  };
+
+  const handleRemoveUpload = () => {
+    setParsedItems(null);
+    setUploadedFile(null);
+    setError(null);
   };
 
   const handleSubmit = async () => {
@@ -174,26 +171,55 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
           </div>
 
           <div className="space-y-2.5">
-            <Label htmlFor="feedback-items" className="text-sm font-medium">
-              Feedback items
-            </Label>
-            <Textarea
-              id="feedback-items"
-              value={text}
-              onChange={(event) => {
-                setText(event.target.value);
-                setParsedItems(null);
-                setUploadHint(null);
-              }}
-              rows={10}
-              placeholder="Paste one feedback item per line"
-              className="min-h-48 resize-y text-sm leading-6"
-            />
-            <p className="text-xs leading-5 text-muted-foreground">
-              For spreadsheets, we look for columns named Feedback, Comment,
-              Response, etc. Other columns are saved as details you can view per
-              item.
-            </p>
+            {uploadedFile ? (
+              <>
+                <Label className="text-sm font-medium">Uploaded file</Label>
+                <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/20 px-4 py-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+                    <FileUp className="size-4.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-sans text-sm font-medium text-foreground">
+                      {uploadedFile.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {parsedItems?.length ?? 0} row
+                      {(parsedItems?.length ?? 0) === 1 ? "" : "s"} ready to analyze
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={handleRemoveUpload}
+                    disabled={isSubmitting}
+                    aria-label="Remove uploaded file"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Label htmlFor="feedback-items" className="text-sm font-medium">
+                  Feedback items
+                </Label>
+                <Textarea
+                  id="feedback-items"
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                  rows={10}
+                  placeholder="Paste one feedback item per line"
+                  className="min-h-48 resize-y text-sm leading-6"
+                />
+                <p className="text-xs leading-5 text-muted-foreground">
+                  For spreadsheets, we look for columns named Feedback, Comment,
+                  Response, etc. Other columns are saved as details you can view per
+                  item.
+                </p>
+              </>
+            )}
           </div>
 
           <input
@@ -207,23 +233,29 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
               event.target.value = "";
             }}
           />
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSubmitting}
-          >
-            <FileUp />
-            Upload CSV or Excel
-          </Button>
 
-          {uploadHint && (
-            <Alert>
-              <AlertDescription className="text-sm leading-6">
-                {uploadHint}
-              </AlertDescription>
-            </Alert>
+          {uploadedFile ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting}
+            >
+              <FileUp />
+              Replace file
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting}
+            >
+              <FileUp />
+              Upload CSV or Excel
+            </Button>
           )}
 
           {error && (
