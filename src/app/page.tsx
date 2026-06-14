@@ -45,9 +45,9 @@ export default function HomePage() {
     <div className="landing-mesh flex min-h-full flex-col">
       <GlassDockNav />
 
-      <main className="flex-1 pt-20">
+      <main className="flex-1 pt-[4.5rem] sm:pt-20">
         <section className="border-b border-border/40">
-          <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:items-center lg:py-24">
             <div>
               <Badge variant="secondary" className="mb-5">
                 Built for startup ops teams

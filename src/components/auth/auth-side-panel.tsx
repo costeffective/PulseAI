@@ -29,7 +29,7 @@ export function AuthSidePanel({ mode }: AuthSidePanelProps) {
   const isSignup = mode === "signup";
 
   return (
-    <div className="auth-panel relative hidden flex-col justify-between overflow-hidden border-r border-border/40 p-10 lg:flex lg:min-h-full lg:w-[44%] lg:shrink-0 xl:p-12">
+    <div className="auth-panel relative hidden flex-col justify-between overflow-hidden border-r border-border/40 p-8 lg:flex lg:min-h-dvh lg:min-w-[18rem] lg:w-[42%] lg:max-w-xl lg:shrink-0 xl:p-12">
       <div className="relative z-10">
         <Link href="/">
           <Logo variant="light" />
@@ -40,7 +40,7 @@ export function AuthSidePanel({ mode }: AuthSidePanelProps) {
         <Badge className="mb-6 border-white/15 bg-white/10 text-white hover:bg-white/10 dark:border-white/15 dark:bg-white/10 dark:text-white">
           {isSignup ? "Free to start" : "Welcome back"}
         </Badge>
-        <h1 className="font-heading text-4xl leading-[1.1] tracking-tight text-white xl:text-[2.75rem]">
+        <h1 className="font-heading text-3xl leading-[1.1] tracking-tight text-white xl:text-4xl">
           {isSignup
             ? "Start turning feedback into action"
             : "Pick up where you left off"}
@@ -51,7 +51,7 @@ export function AuthSidePanel({ mode }: AuthSidePanelProps) {
             : "Your batches, AI summaries, and classified feedback are waiting. Sign in with a magic link sent to your inbox."}
         </p>
 
-        <ul className="mt-10 space-y-5">
+        <ul className="mt-8 space-y-4 xl:mt-10 xl:space-y-5">
           {highlights.map((item) => (
             <li key={item.title} className="flex gap-4">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/12">

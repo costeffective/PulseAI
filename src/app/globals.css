@@ -185,9 +185,9 @@
 
 .auth-panel {
   background:
-    radial-gradient(ellipse 70% 60% at 100% 0%, oklch(0.45 0.1 265 / 0.35), transparent),
-    radial-gradient(ellipse 50% 50% at 0% 100%, oklch(0.38 0.08 160 / 0.2), transparent),
-    linear-gradient(160deg, oklch(0.32 0.06 265) 0%, oklch(0.26 0.05 265) 55%, oklch(0.22 0.04 265) 100%);
+    radial-gradient(ellipse 70% 60% at 100% 0%, oklch(1 0 0 / 0.06), transparent),
+    radial-gradient(ellipse 50% 50% at 0% 100%, oklch(1 0 0 / 0.04), transparent),
+    oklch(0.06 0 0);
 }
 
 .dark .auth-panel {

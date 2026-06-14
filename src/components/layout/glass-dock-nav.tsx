@@ -18,11 +18,18 @@ export function GlassDockNav({ className, variant = "landing" }: GlassDockNavPro
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6",
+        isAuth
+          ? "z-10 flex w-full shrink-0 justify-center px-4 pt-4 sm:px-6 lg:justify-end lg:px-10 lg:pt-6"
+          : "pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6",
         className,
       )}
     >
-      <nav className="glass-dock pointer-events-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 py-2.5 sm:px-5">
+      <nav
+        className={cn(
+          "glass-dock pointer-events-auto flex items-center justify-between gap-3 px-3 py-2 sm:gap-4 sm:px-4 sm:py-2.5",
+          isAuth ? "w-full max-w-md sm:max-w-lg lg:w-auto lg:max-w-none" : "w-full max-w-4xl",
+        )}
+      >
         <div className="flex min-w-0 items-center gap-2">
           {isAuth ? (
             <>
@@ -34,7 +41,7 @@ export function GlassDockNav({ className, variant = "landing" }: GlassDockNavPro
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
                   dockBtn,
-                  "hidden sm:inline-flex",
+                  "inline-flex",
                 )}
               >
                 <ArrowLeft className="size-3.5" />
@@ -66,7 +73,8 @@ export function GlassDockNav({ className, variant = "landing" }: GlassDockNavPro
                 href="/signup"
                 className={cn(buttonVariants({ size: "sm" }), dockBtn)}
               >
-                Get started
+                <span className="hidden sm:inline">Get started</span>
+                <span className="sm:hidden">Start</span>
                 <ArrowRight className="size-3.5" />
               </Link>
             </>
