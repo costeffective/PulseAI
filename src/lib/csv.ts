@@ -241,6 +241,37 @@ export function extractItemsFromCsv(text: string): ParsedFeedbackRow[] {
   return extractItemsFromSpreadsheetText(text);
 }
 
+export function parseNewSheetRows(
+  values: string[][],
+  syncedDataRowCount: number,
+): ParsedFeedbackRow[] {
+  if (values.length < 2) return [];
+
+  const headers = values[0].map((cell) => normalizeHeader(stripCell(cell)));
+  const newValueRows = values.slice(1 + syncedDataRowCount);
+
+  const objectRows = newValueRows
+    .map((row) => {
+      const normalized: Record<string, string> = {};
+      headers.forEach((header, index) => {
+        if (!header) return;
+        normalized[header] = stripCell(row[index]);
+      });
+      return normalized;
+    })
+    .filter((row) => Object.values(row).some(Boolean));
+
+  return parseStructuredRows(objectRows);
+}
+
+export function extractSpreadsheetId(input: string): string | null {
+  const trimmed = input.trim();
+  const urlMatch = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (urlMatch) return urlMatch[1];
+  if (/^[a-zA-Z0-9-_]{20,}$/.test(trimmed)) return trimmed;
+  return null;
+}
+
 export function getMetadataPreview(item: ParsedFeedbackRow | { metadata: FeedbackMetadata }) {
   const entries = Object.entries(item.metadata);
   if (entries.length === 0) return null;

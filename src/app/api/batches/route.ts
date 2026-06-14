@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { classifyFeedbackBatch } from "@/lib/gemini";
+import { processBatchFromItems } from "@/lib/process-batch";
 import { generateBatchName } from "@/lib/stats";
 import { createClient } from "@/lib/supabase/server";
-import type { BatchSubmitItem, FeedbackMetadata } from "@/lib/types";
+import type { BatchSubmitItem } from "@/lib/types";
 
 function normalizeSubmitItems(
   rawItems: Array<string | BatchSubmitItem> | undefined,
@@ -26,60 +27,6 @@ function normalizeSubmitItems(
       return { text, metadata };
     })
     .filter((item): item is BatchSubmitItem => item !== null);
-}
-
-function isMissingMetadataColumn(message: string) {
-  return /metadata/i.test(message) && /column|schema cache/i.test(message);
-}
-
-async function insertFeedbackItems(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  batchId: string,
-  classifiedItems: Array<{
-    line_index: number;
-    text: string;
-    category: string;
-    sentiment: string;
-    priority: string;
-  }>,
-  sourceItems: BatchSubmitItem[],
-) {
-  const rowsWithMetadata = classifiedItems.map((item) => ({
-    batch_id: batchId,
-    line_index: item.line_index,
-    text: item.text,
-    category: item.category,
-    sentiment: item.sentiment,
-    priority: item.priority,
-    metadata: sourceItems[item.line_index]?.metadata ?? {},
-  }));
-
-  const withMetadata = await supabase
-    .from("feedback_items")
-    .insert(rowsWithMetadata);
-
-  if (!withMetadata.error) return;
-
-  if (!isMissingMetadataColumn(withMetadata.error.message)) {
-    throw new Error(withMetadata.error.message);
-  }
-
-  const rowsWithoutMetadata = classifiedItems.map((item) => ({
-    batch_id: batchId,
-    line_index: item.line_index,
-    text: item.text,
-    category: item.category,
-    sentiment: item.sentiment,
-    priority: item.priority,
-  }));
-
-  const withoutMetadata = await supabase
-    .from("feedback_items")
-    .insert(rowsWithoutMetadata);
-
-  if (withoutMetadata.error) {
-    throw new Error(withoutMetadata.error.message);
-  }
 }
 
 export async function GET() {
@@ -133,47 +80,16 @@ export async function POST(request: Request) {
 
   const batchName = body.name?.trim() || generateBatchName();
 
-  const { data: batch, error: batchError } = await supabase
-    .from("batches")
-    .insert({
-      user_id: user.id,
-      name: batchName,
-      status: "processing",
-    })
-    .select("id")
-    .single();
-
-  if (batchError || !batch) {
-    return NextResponse.json(
-      { error: batchError?.message ?? "Failed to create batch" },
-      { status: 500 },
-    );
-  }
-
   try {
-    const result = await classifyFeedbackBatch(items.map((item) => item.text));
+    const { batchId } = await processBatchFromItems(
+      supabase,
+      user.id,
+      items,
+      batchName,
+    );
 
-    await insertFeedbackItems(supabase, batch.id, result.items, items);
-
-    const { error: updateError } = await supabase
-      .from("batches")
-      .update({
-        summary: result.summary,
-        status: "completed",
-      })
-      .eq("id", batch.id);
-
-    if (updateError) {
-      throw new Error(updateError.message);
-    }
-
-    return NextResponse.json({ batchId: batch.id });
+    return NextResponse.json({ batchId });
   } catch (processingError) {
-    await supabase
-      .from("batches")
-      .update({ status: "failed" })
-      .eq("id", batch.id);
-
     const message =
       processingError instanceof Error
         ? processingError.message

@@ -50,7 +50,7 @@ Pulse gives ops and product teams a lightweight workflow:
 | **AI classification** | Tags each item as Bug, Feature request, Pricing, UX issue, Praise, or Other — with sentiment and priority |
 | **Batch summaries** | Gemini generates a short narrative summary per upload |
 | **Batch chat** | Ask questions about a specific batch ("What are the top UX complaints?") |
-| **Smart file parsing** | Auto-detects feedback columns in CSV/XLSX exports from Google Forms, Typeform, etc. |
+| **Integrations** | Google Forms via Sheets — OAuth connect, 15-min auto-sync, manual sync |
 | **Filtering** | One-click filters for sentiment, priority, and category |
 | **Batch history** | Switch between uploads and compare negative %, top themes, and high-priority counts |
 | **Auth** | Supabase email magic link — no passwords to manage |

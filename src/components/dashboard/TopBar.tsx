@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut, MessageSquare, PanelLeft, Plus } from "lucide-react";
+import Link from "next/link";
+import { LogOut, MessageSquare, PanelLeft, Plug, Plus } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,12 @@ export function TopBar({
         </div>
 
         <div className="glass-dock-actions flex min-w-0 items-center gap-0.5 overflow-x-auto p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <Link href="/dashboard/integrations">
+            <Button variant="ghost" size="sm" className={cn(dockBtn)} aria-label="Integrations">
+              <Plug />
+              <span className="hidden sm:inline">Integrations</span>
+            </Button>
+          </Link>
           {showChatButton && onOpenChat && (
             <Button
               variant="ghost"

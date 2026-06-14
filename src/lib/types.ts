@@ -69,3 +69,30 @@ export interface BatchSubmitItem {
   text: string;
   metadata?: FeedbackMetadata;
 }
+
+export type IntegrationProvider = "google_sheets";
+export type IntegrationStatus = "active" | "paused" | "error";
+
+export interface GoogleSheetCredentials {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+}
+
+export interface IntegrationConnection {
+  id: string;
+  user_id: string;
+  provider: IntegrationProvider;
+  name: string;
+  status: IntegrationStatus;
+  spreadsheet_id: string;
+  sheet_name: string;
+  last_synced_at: string | null;
+  last_synced_row: number;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntegrationConnectionListItem
+  extends Omit<IntegrationConnection, "user_id"> {}

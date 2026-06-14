@@ -60,17 +60,28 @@ flowchart LR
 
 Reuse `src/lib/csv.ts` column detection for webhook JSON payloads.
 
-## Phase 2 — Google Forms
+## Phase 2 — Google Forms ✅ (Sheets polling MVP)
 
-### Option A: Google Sheets bridge (fastest MVP)
+### Implemented: Google Sheets bridge
 
 1. Form responses sync to a linked Google Sheet
 2. Pulse OAuth (read-only Sheets scope)
-3. Cron polls new rows every 15 minutes
-4. Uses existing spreadsheet parser
-5. Creates incremental batches
+3. Vercel cron polls active connections every 15 minutes
+4. Reuses `src/lib/csv.ts` column detection on sheet rows
+5. Creates incremental AI-classified batches
 
-### Option B: Google Apps Script relay
+**Dashboard:** `/dashboard/integrations`
+
+**Setup:**
+
+1. Run `supabase/migrations/004_integration_connections.sql`
+2. Create Google Cloud OAuth credentials (Web application)
+3. Add redirect URI: `https://your-domain/api/integrations/google/callback`
+4. Set env vars: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`
+5. In Google Forms: Responses → Link to Sheets
+6. Connect the sheet in Pulse → Integrations
+
+### Option B: Google Apps Script relay (planned)
 
 1. Apps Script on the response Sheet POSTs new rows to a Pulse webhook
 2. Near real-time without polling
@@ -108,7 +119,7 @@ Native webhooks:
 ## Suggested order
 
 1. Metadata + smart CSV parsing (done)
-2. Generic webhook + field mapping
-3. Google Sheets polling
+2. Google Sheets polling (done)
+3. Generic webhook + field mapping
 4. Typeform / Tally templates
-5. Integrations settings UI
+5. Integrations settings UI polish

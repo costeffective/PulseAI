@@ -1,9 +1,21 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/sync-sheets",
+      "schedule": "*/15 * * * *"
+    }
+  ],
   "functions": {
     "src/app/api/batches/route.ts": {
       "maxDuration": 60
     },
     "src/app/api/batches/[id]/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/cron/sync-sheets/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/integrations/google/[id]/sync/route.ts": {
       "maxDuration": 60
     }
   }
