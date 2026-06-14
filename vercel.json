@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/api/batches/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/batches/[id]/chat/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
