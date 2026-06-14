@@ -69,7 +69,7 @@ export default function HomePage() {
                   </Button>
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  Free to try · Email sign-in · No credit card
+                  Free to try · Email or password · No credit card
                 </p>
               </div>
             </div>

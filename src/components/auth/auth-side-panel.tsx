@@ -1,4 +1,4 @@
-import { BarChart3, MailCheck, Sparkles } from "lucide-react";
+import { BarChart3, KeyRound, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,9 @@ const highlights = [
     description: "Spot negative spikes and recurring themes fast.",
   },
   {
-    icon: MailCheck,
-    title: "Passwordless access",
-    description: "Secure magic links — no passwords to remember.",
+    icon: KeyRound,
+    title: "Secure sign-in",
+    description: "Password by default, or use a magic link if you prefer.",
   },
 ];
 
@@ -48,7 +48,7 @@ export function AuthSidePanel({ mode }: AuthSidePanelProps) {
         <p className="mt-4 text-base leading-7 text-white/65">
           {isSignup
             ? "Create your workspace in under a minute. Paste feedback or upload a CSV and let AI surface what needs attention first."
-            : "Your batches, AI summaries, and classified feedback are waiting. Sign in with a magic link sent to your inbox."}
+            : "Your batches, AI summaries, and classified feedback are waiting. Sign in to continue."}
         </p>
 
         <ul className="mt-8 space-y-4 xl:mt-10 xl:space-y-5">

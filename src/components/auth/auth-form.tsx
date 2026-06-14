@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  KeyRound,
   Loader2,
+  Lock,
   Mail,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,22 +19,43 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
+type AuthMethod = "password" | "magic-link";
+type SuccessView = "magic-link" | "confirm-email";
+
 interface AuthFormProps {
   mode: "login" | "signup";
   authError?: string;
 }
 
 export function AuthForm({ mode, authError }: AuthFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMethod, setAuthMethod] = useState<AuthMethod>("password");
+  const [successView, setSuccessView] = useState<SuccessView | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(
     authError === "auth"
-      ? "That sign-in link expired or is invalid. Request a new one below."
+      ? "That sign-in link expired or is invalid. Try signing in again."
       : null,
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const isSignup = mode === "signup";
+  const usesPassword = authMethod === "password";
+
+  const resetFormState = () => {
+    setSubmittedEmail(null);
+    setSuccessView(null);
+    setError(null);
+    setPassword("");
+  };
+
+  const switchAuthMethod = (method: AuthMethod) => {
+    setAuthMethod(method);
+    setError(null);
+    setPassword("");
+  };
 
   const sendMagicLink = async (targetEmail: string) => {
     setIsLoading(true);
@@ -64,14 +88,85 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
     }
 
     setSubmittedEmail(targetEmail);
+    setSuccessView("magic-link");
+  };
+
+  const signInWithPassword = async () => {
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (signInError) {
+      if (signInError.message.toLowerCase().includes("invalid login credentials")) {
+        setError("Incorrect email or password.");
+        return;
+      }
+
+      setError(signInError.message);
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  };
+
+  const signUpWithPassword = async () => {
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
+    });
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+
+    if (data.session) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    setSubmittedEmail(email.trim());
+    setSuccessView("confirm-email");
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await sendMagicLink(email.trim());
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (usesPassword) {
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters.");
+          return;
+        }
+
+        if (isSignup) {
+          await signUpWithPassword();
+        } else {
+          await signInWithPassword();
+        }
+      } else {
+        await sendMagicLink(email.trim());
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (submittedEmail) {
+  if (submittedEmail && successView) {
+    const isMagicLink = successView === "magic-link";
+
     return (
       <div className="mx-auto w-full min-w-0 max-w-md">
         <div className="rounded-3xl border border-border/50 bg-card/80 p-8 shadow-sm backdrop-blur-sm ring-1 ring-foreground/5">
@@ -83,46 +178,56 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
             Check your inbox
           </h2>
           <p className="mt-3 text-center font-sans text-sm leading-6 text-muted-foreground">
-            We sent a secure magic link to{" "}
-            <span className="font-medium text-foreground">{submittedEmail}</span>
-            . Click it to {isSignup ? "finish creating your account" : "sign in"}.
+            {isMagicLink ? (
+              <>
+                We sent a secure magic link to{" "}
+                <span className="font-medium text-foreground">{submittedEmail}</span>
+                . Click it to {isSignup ? "finish creating your account" : "sign in"}.
+              </>
+            ) : (
+              <>
+                We sent a confirmation link to{" "}
+                <span className="font-medium text-foreground">{submittedEmail}</span>
+                . Confirm your email, then sign in with your password.
+              </>
+            )}
           </p>
 
           <div className="mt-6 rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
             <p className="font-sans text-xs leading-5 text-muted-foreground">
-              Link expires in about an hour. Check spam or promotions if you
-              don&apos;t see it within a minute.
+              {isMagicLink
+                ? "Link expires in about an hour. Check spam or promotions if you don't see it within a minute."
+                : "After confirming, return here and sign in with the email and password you just created."}
             </p>
           </div>
 
           <div className="mt-6 flex flex-col gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              disabled={isLoading}
-              onClick={() => void sendMagicLink(submittedEmail)}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Resending…
-                </>
-              ) : (
-                "Resend magic link"
-              )}
-            </Button>
+            {isMagicLink && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full"
+                disabled={isLoading}
+                onClick={() => void sendMagicLink(submittedEmail)}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Resending…
+                  </>
+                ) : (
+                  "Resend magic link"
+                )}
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
-              className="w-full text-muted-foreground"
-              onClick={() => {
-                setSubmittedEmail(null);
-                setError(null);
-              }}
+              className="w-full rounded-full text-muted-foreground"
+              onClick={resetFormState}
             >
               <ArrowLeft className="size-4" />
-              Use a different email
+              Back to sign in
             </Button>
           </div>
         </div>
@@ -139,7 +244,9 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
         <p className="mt-2 font-sans text-sm leading-6 text-muted-foreground">
           {isSignup
             ? "Start triaging feedback with AI in minutes."
-            : "Continue to your dashboard with a magic link."}
+            : usesPassword
+              ? "Sign in with your email and password."
+              : "We'll email you a secure sign-in link."}
         </p>
       </div>
 
@@ -174,9 +281,11 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
             {isSignup ? "Create your account" : "Sign in to Pulse"}
           </h2>
           <p className="mt-1.5 font-sans text-sm leading-6 text-muted-foreground">
-            {isSignup
-              ? "Enter your work email — we'll send a link to get you started."
-              : "Enter your email and we'll send you a secure sign-in link."}
+            {usesPassword
+              ? isSignup
+                ? "Choose a password for your workspace."
+                : "Enter your email and password to continue."
+              : "Prefer no password? We'll send a one-time sign-in link."}
           </p>
         </div>
 
@@ -193,10 +302,30 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@company.com"
-                className="h-11 pl-9"
+                className="h-11 rounded-xl pl-9"
               />
             </div>
           </div>
+
+          {usesPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete={isSignup ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={isSignup ? "At least 6 characters" : "Your password"}
+                  className="h-11 rounded-xl pl-9"
+                />
+              </div>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">
@@ -207,21 +336,54 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
           <Button
             type="submit"
             className="h-11 w-full rounded-full font-sans"
-            disabled={isLoading || !email.trim()}
+            disabled={
+              isLoading ||
+              !email.trim() ||
+              (usesPassword && password.length < 6)
+            }
           >
             {isLoading ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Sending link…
+                {usesPassword
+                  ? isSignup
+                    ? "Creating account…"
+                    : "Signing in…"
+                  : "Sending link…"}
               </>
             ) : (
               <>
-                {isSignup ? "Create account" : "Send magic link"}
+                {usesPassword
+                  ? isSignup
+                    ? "Create account"
+                    : "Sign in"
+                  : isSignup
+                    ? "Send magic link"
+                    : "Send magic link"}
                 <ArrowRight className="size-4" />
               </>
             )}
           </Button>
         </form>
+
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() =>
+              switchAuthMethod(usesPassword ? "magic-link" : "password")
+            }
+            className="inline-flex items-center gap-1.5 font-sans text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <KeyRound className="size-3.5" />
+            {usesPassword
+              ? isSignup
+                ? "Create account without a password"
+                : "Sign in without a password"
+              : isSignup
+                ? "Create account with a password"
+                : "Sign in with a password"}
+          </button>
+        </div>
 
         <p className="mt-6 text-center font-sans text-xs leading-5 text-muted-foreground">
           {isSignup ? (
@@ -248,13 +410,10 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
         </p>
       </div>
 
-      <p
-        className={cn(
-          "mt-6 text-center font-sans text-xs leading-5 text-muted-foreground",
-        )}
-      >
-        By continuing, you agree to receive a one-time sign-in email. No password
-        required.
+      <p className="mt-6 text-center font-sans text-xs leading-5 text-muted-foreground">
+        {usesPassword
+          ? "Your password is stored securely by Supabase Auth."
+          : "We'll send a one-time sign-in link to your inbox. No password needed."}
       </p>
     </div>
   );
