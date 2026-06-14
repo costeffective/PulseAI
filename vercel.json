@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/sync-sheets",
+      "schedule": "0 12 * * *"
+    }
+  ],
   "functions": {
     "src/app/api/batches/route.ts": {
       "maxDuration": 60

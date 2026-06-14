@@ -186,7 +186,7 @@ export function IntegrationsContent() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Connect a Google Form via its linked response sheet. Pulse polls for new
-            rows every 15 minutes and adds them to one persistent batch per connection.
+            rows once per day and adds them to one persistent batch per connection.
           </p>
         </div>
 

@@ -146,7 +146,7 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
                 Connect Google Forms
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Link a response sheet and auto-sync new submissions every 15 minutes.
+                Link a response sheet and auto-sync new submissions once per day.
               </p>
             </div>
           </button>
