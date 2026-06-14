@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Inbox, Plus } from "lucide-react";
 import { BatchChatPanel } from "@/components/dashboard/BatchChatPanel";
@@ -37,6 +37,14 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardPageContent />
+    </Suspense>
+  );
+}
+
+function DashboardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preferredBatchId = searchParams.get("batch");
