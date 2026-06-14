@@ -4,7 +4,6 @@ import { AuthForm } from "@/components/auth/auth-form";
 import { AuthSidePanel } from "@/components/auth/auth-side-panel";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
 
 interface AuthPageProps {
   mode: "login" | "signup";
@@ -23,17 +22,13 @@ export function AuthPage({ mode, authError }: AuthPageProps) {
               <Link href="/" className="lg:hidden">
                 <Logo />
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden text-muted-foreground sm:inline-flex"
-                asChild
+              <Link
+                href="/"
+                className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
               >
-                <Link href="/">
-                  <ArrowLeft className="size-4" />
-                  Back to home
-                </Link>
-              </Button>
+                <ArrowLeft className="size-4" />
+                Back to home
+              </Link>
             </div>
             <ThemeToggle />
           </div>
