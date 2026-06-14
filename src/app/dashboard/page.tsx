@@ -276,7 +276,7 @@ export default function DashboardPage() {
           onSignOut={() => void handleSignOut()}
         />
 
-        <main className="mx-auto w-full max-w-6xl space-y-8 px-6 py-10">
+        <main className="mx-auto w-full max-w-6xl space-y-8 px-6 pb-10 pt-24">
           {selectedBatch && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">Current batch</p>

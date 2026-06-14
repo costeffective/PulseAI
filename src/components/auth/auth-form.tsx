@@ -74,7 +74,7 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
   if (submittedEmail) {
     return (
       <div className="mx-auto w-full max-w-md">
-        <div className="rounded-2xl border border-border/70 bg-card p-8 shadow-sm ring-1 ring-foreground/5">
+        <div className="rounded-2xl border border-border/50 bg-card/80 p-8 shadow-sm backdrop-blur-sm ring-1 ring-foreground/5">
           <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800/60">
             <CheckCircle2 className="size-7" />
           </div>
@@ -143,7 +143,7 @@ export function AuthForm({ mode, authError }: AuthFormProps) {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm ring-1 ring-foreground/5 sm:p-8">
+      <div className="rounded-2xl border border-border/50 bg-card/80 p-6 shadow-sm backdrop-blur-sm ring-1 ring-foreground/5 sm:p-8">
         <div className="mb-6 grid h-10 w-full grid-cols-2 rounded-lg bg-muted p-[3px]">
           <Link
             href="/login"

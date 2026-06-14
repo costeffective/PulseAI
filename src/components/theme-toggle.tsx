@@ -28,7 +28,7 @@ export function ThemeToggle() {
             variant="outline"
             size="sm"
             aria-label="Toggle theme"
-            className="size-8 shrink-0 px-0"
+            className="size-8 shrink-0 border-transparent bg-transparent px-0 shadow-none hover:bg-black/5 dark:hover:bg-white/10"
           />
         }
       >

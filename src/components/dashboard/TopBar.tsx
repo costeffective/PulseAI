@@ -24,8 +24,8 @@ export function TopBar({
   showChatButton = false,
 }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="flex items-center justify-between gap-4 px-6 py-3.5">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-3 sm:px-6">
+      <header className="glass-dock pointer-events-auto flex w-full max-w-6xl items-center justify-between gap-3 px-3 py-2 sm:px-4">
         <div className="flex items-center gap-2">
           {showBatchesButton && onOpenBatches && (
             <Button
@@ -41,9 +41,9 @@ export function TopBar({
           <Logo size="sm" />
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="glass-dock-actions flex items-center gap-1">
           {showChatButton && onOpenChat && (
-            <Button variant="outline" size="sm" onClick={onOpenChat}>
+            <Button variant="ghost" size="sm" onClick={onOpenChat}>
               <MessageSquare />
               <span className="hidden sm:inline">Ask AI</span>
             </Button>
@@ -58,13 +58,13 @@ export function TopBar({
           <Button onClick={onNewBatch} size="sm" className="sm:hidden" aria-label="New batch">
             <Plus />
           </Button>
-          <Separator orientation="vertical" className="hidden h-6 sm:block" />
-          <Button variant="outline" size="sm" onClick={onSignOut}>
+          <Separator orientation="vertical" className="hidden h-5 sm:block" />
+          <Button variant="ghost" size="sm" onClick={onSignOut}>
             <LogOut />
             <span className="hidden sm:inline">Sign out</span>
           </Button>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }

@@ -23,7 +23,7 @@ export function Logo({
         className={cn(
           "relative flex shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground shadow-[0_1px_2px_oklch(0.25_0.06_265/0.18),inset_0_1px_0_oklch(1_0_0/0.12)] ring-1 ring-primary/25",
           isSmall ? "size-8" : "size-9",
-          isLight && "from-primary-foreground via-primary-foreground to-primary-foreground/90 text-primary ring-primary-foreground/20",
+          isLight && "from-white via-white to-white/90 text-black ring-white/20 shadow-none",
         )}
       >
         <PulseMark className={isSmall ? "size-[17px]" : "size-[19px]"} />
@@ -35,7 +35,7 @@ export function Logo({
             className={cn(
               "font-brand",
               isSmall ? "text-[15px]" : "text-[17px]",
-              isLight ? "text-primary-foreground" : "text-foreground",
+              isLight ? "text-white" : "text-foreground",
             )}
           >
             Pulse
@@ -44,7 +44,7 @@ export function Logo({
             <p
               className={cn(
                 "mt-1 font-sans text-[10px] font-medium uppercase tracking-[0.14em]",
-                isLight ? "text-primary-foreground/70" : "text-muted-foreground/90",
+                isLight ? "text-white/65" : "text-muted-foreground/90",
               )}
             >
               Feedback intelligence

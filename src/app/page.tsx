@@ -7,9 +7,8 @@ import {
   Tags,
   Upload,
 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { GlassDockNav } from "@/components/layout/glass-dock-nav";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,29 +42,11 @@ const features = [
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Logo />
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm">
-                Get started
-                <ArrowRight />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="landing-mesh flex min-h-full flex-col">
+      <GlassDockNav />
 
-      <main className="flex-1">
-        <section className="hero-glow border-b border-border/60">
+      <main className="flex-1 pt-20">
+        <section className="border-b border-border/40">
           <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
             <div>
               <Badge variant="secondary" className="mb-5">
@@ -97,7 +78,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="app-shell-bg border-b border-border/60 py-16">
+        <section className="border-b border-border/40 py-16">
           <div className="mx-auto max-w-6xl px-6">
             <div className="mb-10 max-w-2xl">
               <h2 className="font-heading text-3xl tracking-tight text-foreground">
@@ -155,10 +136,10 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-border/60 py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 text-sm text-muted-foreground">
-          <Logo size="sm" />
+      <footer className="border-t border-border/40 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 text-sm text-muted-foreground sm:flex-row">
           <p>Pulse · AI feedback triage for small teams</p>
+          <p className="text-xs">© {new Date().getFullYear()}</p>
         </div>
       </footer>
     </div>
