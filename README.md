@@ -3,6 +3,10 @@
 **Turn scattered customer feedback into a clear action list.**
 
 **Live demo:** [pulse-ai-dash.vercel.app](https://pulse-ai-dash.vercel.app)
+<img width="1865" height="930" alt="image" src="https://github.com/user-attachments/assets/f85444b5-5936-4117-a964-fa5900bfd0b7" />
+<img width="1861" height="881" alt="image" src="https://github.com/user-attachments/assets/0624464a-a977-49ab-8ab9-30a8219cbf66" />
+
+
 
 Pulse is an AI-powered feedback triage app for small product teams. Upload a CSV, paste responses, or drop in a spreadsheet — Gemini classifies every item by category, sentiment, and priority, then surfaces trends across batches over time.
 
