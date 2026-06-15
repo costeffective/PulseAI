@@ -120,12 +120,25 @@ function DashboardPageContent() {
         setBatches(nextBatches);
 
         if (nextBatches.length > 0) {
-          const targetId =
+          const preferredExists =
             preferredBatchId &&
-            nextBatches.some((batch) => batch.id === preferredBatchId)
-              ? preferredBatchId
-              : nextBatches[0].id;
-          await loadBatch(targetId);
+            nextBatches.some((batch) => batch.id === preferredBatchId);
+
+          const targetId = preferredExists
+            ? preferredBatchId!
+            : nextBatches[0].id;
+
+          try {
+            await loadBatch(targetId);
+          } catch {
+            const fallbackId = nextBatches.find((batch) => batch.id !== targetId)?.id;
+            if (fallbackId) {
+              await loadBatch(fallbackId);
+              router.replace("/dashboard");
+            } else {
+              throw new Error("Failed to load batch");
+            }
+          }
         } else {
           setSelectedBatch(null);
           setSelectedBatchId(null);
@@ -140,7 +153,7 @@ function DashboardPageContent() {
         setIsLoading(false);
       }
     },
-    [loadBatch],
+    [loadBatch, router],
   );
 
   useEffect(() => {

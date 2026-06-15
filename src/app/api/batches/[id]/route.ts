@@ -1,4 +1,5 @@
 import { normalizeBatchAnalysis } from "@/lib/batch-analysis";
+import { fetchBatchRecord } from "@/lib/batch-fetch";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { FeedbackItem, FeedbackMetadata } from "@/lib/types";
@@ -36,11 +37,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: batch, error: batchError } = await supabase
-    .from("batches")
-    .select("id, user_id, name, summary, analysis, status, created_at")
-    .eq("id", id)
-    .single();
+  const { data: batch, error: batchError } = await fetchBatchRecord(supabase, id);
 
   if (batchError || !batch) {
     return NextResponse.json({ error: "Batch not found" }, { status: 404 });

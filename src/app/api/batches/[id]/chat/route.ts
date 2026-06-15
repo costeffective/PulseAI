@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { normalizeBatchAnalysis } from "@/lib/batch-analysis";
+import { fetchBatchRecord } from "@/lib/batch-fetch";
 import { buildBatchChatContext } from "@/lib/batch-context";
 import { chatAboutBatch, type ChatTurn } from "@/lib/gemini-chat";
 import { createClient } from "@/lib/supabase/server";
@@ -80,11 +81,7 @@ export async function POST(
     );
   }
 
-  const { data: batch, error: batchError } = await supabase
-    .from("batches")
-    .select("id, user_id, name, summary, analysis, status, created_at")
-    .eq("id", id)
-    .single();
+  const { data: batch, error: batchError } = await fetchBatchRecord(supabase, id);
 
   if (batchError || !batch) {
     return NextResponse.json({ error: "Batch not found" }, { status: 404 });
