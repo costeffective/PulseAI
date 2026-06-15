@@ -1,9 +1,11 @@
 import {
   classifyFeedbackBatch,
+  generateBatchAnalysisFromItems,
   summarizeClassifiedFeedback,
 } from "@/lib/gemini";
+import { buildFallbackAnalysis } from "@/lib/batch-analysis";
 import type { createClient } from "@/lib/supabase/server";
-import type { BatchSubmitItem } from "@/lib/types";
+import type { BatchSubmitItem, FeedbackItem } from "@/lib/types";
 
 type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -64,23 +66,92 @@ async function insertFeedbackItems(
   }
 }
 
+function isMissingAnalysisColumn(message: string) {
+  return /analysis/i.test(message) && /column|schema cache/i.test(message);
+}
+
 async function refreshBatchSummary(
   supabase: ServerSupabase,
   batchId: string,
 ) {
-  const { data: items, error } = await supabase
+  const withMetadata = await supabase
     .from("feedback_items")
-    .select("text, category, sentiment, priority")
+    .select("text, category, sentiment, priority, metadata")
     .eq("batch_id", batchId)
     .order("line_index", { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+  let rawItems = withMetadata.data ?? [];
+  let itemsError = withMetadata.error;
+
+  if (itemsError && isMissingMetadataColumn(itemsError.message)) {
+    const withoutMetadata = await supabase
+      .from("feedback_items")
+      .select("text, category, sentiment, priority")
+      .eq("batch_id", batchId)
+      .order("line_index", { ascending: true });
+
+    rawItems = (withoutMetadata.data ?? []).map((item) => ({
+      ...item,
+      metadata: {},
+    }));
+    itemsError = withoutMetadata.error;
   }
 
-  const summary = await summarizeClassifiedFeedback(items ?? []);
+  if (itemsError) {
+    throw new Error(itemsError.message);
+  }
 
-  const { error: updateError } = await supabase
+  const normalizedItems = rawItems.map((item) => ({
+    text: String(item.text),
+    category: String(item.category),
+    sentiment: String(item.sentiment),
+    priority: String(item.priority),
+    metadata:
+      "metadata" in item &&
+      item.metadata &&
+      typeof item.metadata === "object" &&
+      !Array.isArray(item.metadata)
+        ? (item.metadata as Record<string, string>)
+        : {},
+  }));
+
+  const summary = await summarizeClassifiedFeedback(normalizedItems);
+
+  let analysis = null;
+  try {
+    analysis = await generateBatchAnalysisFromItems(normalizedItems);
+  } catch {
+    analysis = buildFallbackAnalysis(
+      normalizedItems.map((item, index) => ({
+        id: String(index),
+        batch_id: batchId,
+        line_index: index,
+        text: item.text,
+        category: item.category,
+        sentiment: item.sentiment as FeedbackItem["sentiment"],
+        priority: item.priority as FeedbackItem["priority"],
+        metadata: item.metadata,
+        created_at: new Date().toISOString(),
+      })),
+    );
+  }
+
+  const withAnalysis = await supabase
+    .from("batches")
+    .update({
+      summary,
+      analysis,
+      status: "completed",
+    })
+    .eq("id", batchId);
+
+  if (!withAnalysis.error) return;
+
+  if (!isMissingAnalysisColumn(withAnalysis.error.message)) {
+    throw new Error(withAnalysis.error.message);
+  }
+
+  const withoutAnalysis = await supabase
     .from("batches")
     .update({
       summary,
@@ -88,8 +159,8 @@ async function refreshBatchSummary(
     })
     .eq("id", batchId);
 
-  if (updateError) {
-    throw new Error(updateError.message);
+  if (withoutAnalysis.error) {
+    throw new Error(withoutAnalysis.error.message);
   }
 }
 
@@ -118,20 +189,35 @@ export async function processBatchFromItems(
   }
 
   try {
-    const result = await classifyFeedbackBatch(items.map((item) => item.text));
+    const result = await classifyFeedbackBatch(items);
 
     await insertFeedbackItems(supabase, batch.id, result.items, items);
 
-    const { error: updateError } = await supabase
+    const withAnalysis = await supabase
       .from("batches")
       .update({
         summary: result.summary,
+        analysis: result.analysis,
         status: "completed",
       })
       .eq("id", batch.id);
 
-    if (updateError) {
-      throw new Error(updateError.message);
+    if (withAnalysis.error) {
+      if (!isMissingAnalysisColumn(withAnalysis.error.message)) {
+        throw new Error(withAnalysis.error.message);
+      }
+
+      const withoutAnalysis = await supabase
+        .from("batches")
+        .update({
+          summary: result.summary,
+          status: "completed",
+        })
+        .eq("id", batch.id);
+
+      if (withoutAnalysis.error) {
+        throw new Error(withoutAnalysis.error.message);
+      }
     }
 
     return { batchId: batch.id };
@@ -192,7 +278,7 @@ export async function appendItemsToBatch(
     .eq("id", batchId);
 
   try {
-    const result = await classifyFeedbackBatch(items.map((item) => item.text));
+    const result = await classifyFeedbackBatch(items);
 
     await insertFeedbackItems(
       supabase,

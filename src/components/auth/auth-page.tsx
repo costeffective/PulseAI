@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AuthForm } from "@/components/auth/auth-form";
 import { AuthSidePanel } from "@/components/auth/auth-side-panel";
 import { GlassDockNav } from "@/components/layout/glass-dock-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 interface AuthPageProps {
   mode: "login" | "signup";
@@ -19,6 +20,8 @@ export function AuthPage({ mode, authError }: AuthPageProps) {
         <main className="flex flex-1 items-center justify-center px-4 pb-8 pt-2 sm:px-6 sm:pb-10 lg:px-10 lg:pb-12">
           <AuthForm mode={mode} authError={authError} />
         </main>
+
+        <SiteFooter variant="compact" />
       </div>
     </div>
   );

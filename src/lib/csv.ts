@@ -91,17 +91,56 @@ function findFeedbackColumn(
   }, pool[0]);
 }
 
+function findFeedbackColumns(
+  headers: string[],
+  rows: Record<string, string>[],
+): string[] {
+  const explicit = headers.filter((header) => isFeedbackHeader(header));
+  if (explicit.length > 0) return explicit;
+
+  const candidates = headers.filter((header) => !isMetadataHeader(header));
+  const pool = candidates.length > 0 ? candidates : headers;
+
+  const textColumns = pool.filter(
+    (header) => averageTextLength(rows, header) >= 12,
+  );
+
+  if (textColumns.length > 0) {
+    return textColumns.sort(
+      (a, b) => averageTextLength(rows, b) - averageTextLength(rows, a),
+    );
+  }
+
+  return [findFeedbackColumn(headers, rows)];
+}
+
+function buildFeedbackText(
+  row: Record<string, string>,
+  feedbackColumns: string[],
+) {
+  const parts = feedbackColumns
+    .map((column) => {
+      const value = stripCell(row[column]);
+      if (!value) return null;
+      return feedbackColumns.length > 1 ? `${column}: ${value}` : value;
+    })
+    .filter((part): part is string => part !== null);
+
+  return parts.join("\n");
+}
+
 function rowToParsedItem(
   row: Record<string, string>,
-  feedbackColumn: string,
+  feedbackColumns: string[],
 ): ParsedFeedbackRow | null {
-  const text = stripCell(row[feedbackColumn]);
+  const text = buildFeedbackText(row, feedbackColumns);
   if (!text) return null;
 
   const metadata: FeedbackMetadata = {};
+  const feedbackColumnSet = new Set(feedbackColumns);
 
   for (const [key, value] of Object.entries(row)) {
-    if (key === feedbackColumn) continue;
+    if (feedbackColumnSet.has(key)) continue;
     const cleaned = stripCell(value);
     if (cleaned) metadata[normalizeHeader(key)] = cleaned;
   }
@@ -134,10 +173,10 @@ function parseStructuredRows(rows: Record<string, string>[]) {
       .filter((row): row is ParsedFeedbackRow => row !== null);
   }
 
-  const feedbackColumn = findFeedbackColumn(headers, cleanedRows);
+  const feedbackColumns = findFeedbackColumns(headers, cleanedRows);
 
   return cleanedRows
-    .map((row) => rowToParsedItem(row, feedbackColumn))
+    .map((row) => rowToParsedItem(row, feedbackColumns))
     .filter((row): row is ParsedFeedbackRow => row !== null);
 }
 

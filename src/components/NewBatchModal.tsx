@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileUp, Loader2, Sheet, Sparkles, X } from "lucide-react";
+import { FileUp, Loader2, Sheet, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -116,8 +116,8 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="space-y-2 border-b border-border/60 px-6 py-5">
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-h-[min(90dvh,720px)] sm:max-w-2xl">
+        <DialogHeader className="shrink-0 space-y-2 border-b border-border/60 px-6 py-5">
           <DialogTitle className="font-sans text-xl font-semibold">
             New feedback batch
           </DialogTitle>
@@ -128,7 +128,7 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 px-6 py-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-5">
           <button
             type="button"
             onClick={handleConnectGoogleForms}
@@ -209,9 +209,9 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
                   id="feedback-items"
                   value={text}
                   onChange={(event) => setText(event.target.value)}
-                  rows={10}
+                  rows={6}
                   placeholder="Paste one feedback item per line"
-                  className="min-h-48 resize-y text-sm leading-6"
+                  className="min-h-32 resize-y text-sm leading-6 sm:min-h-48"
                 />
                 <p className="text-xs leading-5 text-muted-foreground">
                   For spreadsheets, we look for columns named Feedback, Comment,
@@ -267,11 +267,11 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
           )}
         </div>
 
-        <DialogFooter className="border-t border-border/60 bg-muted/20 px-6 py-4">
+        <DialogFooter className="mx-0 mb-0 flex shrink-0 flex-col-reverse gap-3 border-t border-border/60 bg-muted/20 px-6 py-4 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
-            className="h-10"
+            className="h-10 w-full sm:w-auto"
             onClick={() => handleOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -279,7 +279,7 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
           </Button>
           <Button
             type="button"
-            className="h-10"
+            className="h-10 w-full sm:w-auto"
             onClick={() => void handleSubmit()}
             disabled={isSubmitting}
           >
@@ -289,10 +289,7 @@ export function NewBatchModal({ open, onClose, onSubmit }: NewBatchModalProps) {
                 Analyzing…
               </>
             ) : (
-              <>
-                <Sparkles />
-                Analyze batch
-              </>
+              "Analyze batch"
             )}
           </Button>
         </DialogFooter>

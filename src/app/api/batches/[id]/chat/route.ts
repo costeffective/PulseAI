@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeBatchAnalysis } from "@/lib/batch-analysis";
 import { buildBatchChatContext } from "@/lib/batch-context";
 import { chatAboutBatch, type ChatTurn } from "@/lib/gemini-chat";
 import { createClient } from "@/lib/supabase/server";
@@ -81,7 +82,7 @@ export async function POST(
 
   const { data: batch, error: batchError } = await supabase
     .from("batches")
-    .select("id, user_id, name, summary, status, created_at")
+    .select("id, user_id, name, summary, analysis, status, created_at")
     .eq("id", id)
     .single();
 
@@ -128,7 +129,11 @@ export async function POST(
   }));
 
   try {
-    const systemContext = buildBatchChatContext({ ...batch, items });
+    const systemContext = buildBatchChatContext({
+      ...batch,
+      analysis: normalizeBatchAnalysis(batch.analysis),
+      items,
+    });
     const reply = await chatAboutBatch(systemContext, messages);
     return NextResponse.json({ reply });
   } catch (chatError) {

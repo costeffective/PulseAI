@@ -36,8 +36,26 @@ export interface Batch {
   user_id: string;
   name: string;
   summary: string | null;
+  analysis: BatchAnalysis | null;
   status: "processing" | "completed" | "failed";
   created_at: string;
+}
+
+export interface ColumnInsight {
+  name: string;
+  summary: string;
+  triggerPoints: string[];
+}
+
+export interface BatchAnalysis {
+  overview: string;
+  columns: ColumnInsight[];
+  highPriorityHighlights: Array<{
+    text: string;
+    reason: string;
+    category: string;
+    sentiment: Sentiment;
+  }>;
 }
 
 export interface BatchWithItems extends Batch {

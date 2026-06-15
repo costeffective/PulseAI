@@ -3,12 +3,12 @@ import {
   ArrowRight,
   BarChart3,
   Layers3,
-  Sparkles,
   Tags,
   Upload,
 } from "lucide-react";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 import { GlassDockNav } from "@/components/layout/glass-dock-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,7 +21,7 @@ import {
 
 const features = [
   {
-    icon: Sparkles,
+    icon: Layers3,
     title: "AI classification",
     description:
       "Gemini tags every item with category, sentiment, and priority in seconds.",
@@ -42,7 +42,7 @@ const features = [
 
 export default function HomePage() {
   return (
-    <div className="landing-mesh flex min-h-full flex-col">
+    <div className="landing-mesh flex min-h-dvh flex-col">
       <GlassDockNav />
 
       <main className="flex-1 pt-[4.5rem] sm:pt-20">
@@ -136,12 +136,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-border/40 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 text-sm text-muted-foreground sm:flex-row">
-          <p>Pulse · AI feedback triage for small teams</p>
-          <p className="text-xs">© {new Date().getFullYear()}</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

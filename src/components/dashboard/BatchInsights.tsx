@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   MessageSquare,
   MessageSquareText,
-  Sparkles,
   Tag,
   TrendingDown,
 } from "lucide-react";
@@ -164,7 +163,6 @@ export function BatchInsights({
 
       <div className="flex flex-col gap-3 border-t border-border/60 bg-muted/15 px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-2.5">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
           {isProcessing ? (
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-3.5 w-full" />

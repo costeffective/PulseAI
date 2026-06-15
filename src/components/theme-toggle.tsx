@@ -15,12 +15,14 @@ import {
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const activeAppearance = mounted ? resolvedTheme : undefined;
 
   return (
     <DropdownMenu>
@@ -37,14 +39,10 @@ export function ThemeToggle({ className }: { className?: string }) {
           />
         }
       >
-        {mounted ? (
-          theme === "dark" ? (
-            <Moon className="size-4" />
-          ) : theme === "light" ? (
-            <Sun className="size-4" />
-          ) : (
-            <Monitor className="size-4" />
-          )
+        {activeAppearance === "dark" ? (
+          <Moon className="size-4" />
+        ) : activeAppearance === "light" ? (
+          <Sun className="size-4" />
         ) : (
           <Sun className="size-4" />
         )}

@@ -4,7 +4,11 @@ import {
   type GenerationConfig,
 } from "@google/generative-ai";
 import { z } from "zod";
-import type { ClassificationResult } from "./types";
+import type { ClassificationResult, BatchAnalysis, BatchSubmitItem } from "./types";
+import {
+  buildColumnSamples,
+  collectColumnNames,
+} from "./batch-analysis";
 
 const CHUNK_SIZE = 10;
 const CHUNK_DELAY_MS = 200;
@@ -211,6 +215,187 @@ async function generateSummary(
   return validated.data.summary.trim();
 }
 
+const analysisSchema = z.object({
+  overview: z.string().min(1),
+  columns: z.array(
+    z.object({
+      name: z.string().min(1),
+      summary: z.string().min(1),
+      triggerPoints: z.array(z.string()),
+    }),
+  ),
+  highPriorityHighlights: z.array(
+    z.object({
+      text: z.string().min(1),
+      reason: z.string().min(1),
+      category: z.string().min(1),
+      sentiment: z.enum(["positive", "negative", "neutral"]),
+    }),
+  ),
+});
+
+function buildAnalysisPrompt(
+  items: Array<{
+    text: string;
+    category: string;
+    sentiment: string;
+    priority: string;
+    metadata: Record<string, string>;
+  }>,
+  columnNames: string[],
+  columnSamples: Record<string, string[]>,
+) {
+  const itemLines = items
+    .slice(0, 40)
+    .map((item, index) => {
+      const metadata = Object.entries(item.metadata)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(" | ");
+
+      return `${index + 1}. [${item.category} | ${item.sentiment} | ${item.priority}] ${item.text}${
+        metadata ? ` :: ${metadata}` : ""
+      }`;
+    })
+    .join("\n");
+
+  const columnContext = columnNames
+    .map((name) => {
+      const samples = columnSamples[name] ?? [];
+      return `- ${name}: ${samples.slice(0, 6).join(" · ") || "no samples"}`;
+    })
+    .join("\n");
+
+  return `You are analyzing a spreadsheet or Google Form feedback export for an internal ops dashboard.
+
+Produce a structured analysis for product and support teams.
+
+Rules:
+- overview: 2-3 sentences on the biggest themes and what needs action
+- columns: one entry per form column/question listed below; summarize patterns in responses; triggerPoints are specific red flags, recurring complaints, or escalation-worthy signals (max 3 per column, short phrases)
+- highPriorityHighlights: up to 6 most urgent feedback items already classified as high priority, with a short reason each
+- Be specific and actionable; reference actual themes from the data
+
+Form columns and sample values:
+${columnContext || "- No extra columns; primary feedback text only"}
+
+Classified responses (${items.length} total, showing up to 40):
+${itemLines}`;
+}
+
+async function generateBatchAnalysis(
+  items: Array<{
+    text: string;
+    category: string;
+    sentiment: string;
+    priority: string;
+    metadata: Record<string, string>;
+  }>,
+  retry = true,
+): Promise<BatchAnalysis> {
+  const columnNames = collectColumnNames(items).map((column) => column.name);
+  const columnSamples = buildColumnSamples(items, columnNames);
+
+  const model = getModel({
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: SchemaType.OBJECT,
+      properties: {
+        overview: { type: SchemaType.STRING },
+        columns: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              name: { type: SchemaType.STRING },
+              summary: { type: SchemaType.STRING },
+              triggerPoints: {
+                type: SchemaType.ARRAY,
+                items: { type: SchemaType.STRING },
+              },
+            },
+            required: ["name", "summary", "triggerPoints"],
+          },
+        },
+        highPriorityHighlights: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              text: { type: SchemaType.STRING },
+              reason: { type: SchemaType.STRING },
+              category: { type: SchemaType.STRING },
+              sentiment: {
+                type: SchemaType.STRING,
+                format: "enum",
+                enum: ["positive", "negative", "neutral"],
+              },
+            },
+            required: ["text", "reason", "category", "sentiment"],
+          },
+        },
+      },
+      required: ["overview", "columns", "highPriorityHighlights"],
+    },
+  });
+
+  const result = await model.generateContent(buildAnalysisPrompt(items, columnNames, columnSamples));
+
+  const text = result.response.text();
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    if (retry) {
+      return generateBatchAnalysis(items, false);
+    }
+    throw new Error("Failed to parse Gemini analysis response");
+  }
+
+  const validated = analysisSchema.safeParse(parsed);
+  if (!validated.success) {
+    if (retry) {
+      return generateBatchAnalysis(items, false);
+    }
+    throw new Error("Gemini analysis response failed validation");
+  }
+
+  return {
+    overview: validated.data.overview.trim(),
+    columns: validated.data.columns.map((column) => ({
+      name: column.name.trim(),
+      summary: column.summary.trim(),
+      triggerPoints: column.triggerPoints.map((point) => point.trim()).filter(Boolean),
+    })),
+    highPriorityHighlights: validated.data.highPriorityHighlights.map((item) => ({
+      text: item.text.trim(),
+      reason: item.reason.trim(),
+      category: item.category.trim(),
+      sentiment: item.sentiment,
+    })),
+  };
+}
+
+export async function generateBatchAnalysisFromItems(
+  items: Array<{
+    text: string;
+    category: string;
+    sentiment: string;
+    priority: string;
+    metadata?: Record<string, string>;
+  }>,
+) {
+  return generateBatchAnalysis(
+    items.map((item) => ({
+      text: item.text,
+      category: item.category,
+      sentiment: item.sentiment,
+      priority: item.priority,
+      metadata: item.metadata ?? {},
+    })),
+  );
+}
+
 export async function summarizeClassifiedFeedback(
   items: Array<{
     text: string;
@@ -222,7 +407,7 @@ export async function summarizeClassifiedFeedback(
   return generateSummary(items);
 }
 
-export async function classifyFeedbackBatch(items: string[]) {
+export async function classifyFeedbackBatch(items: BatchSubmitItem[]) {
   if (items.length === 0) {
     throw new Error("At least one feedback item is required");
   }
@@ -231,7 +416,8 @@ export async function classifyFeedbackBatch(items: string[]) {
     throw new Error(`Maximum ${MAX_BATCH_SIZE} items per batch`);
   }
 
-  const chunks = chunkArray(items, CHUNK_SIZE);
+  const texts = items.map((item) => item.text);
+  const chunks = chunkArray(texts, CHUNK_SIZE);
   const allClassifications: ClassificationResult[] = [];
 
   for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
@@ -245,7 +431,7 @@ export async function classifyFeedbackBatch(items: string[]) {
     }
   }
 
-  const classifiedItems = items.map((text, index) => {
+  const classifiedItems = texts.map((text, index) => {
     const classification = allClassifications.find((c) => c.index === index);
     if (!classification) {
       throw new Error(`Missing classification for item ${index}`);
@@ -260,6 +446,12 @@ export async function classifyFeedbackBatch(items: string[]) {
   });
 
   const summary = await generateSummary(classifiedItems);
+  const analysis = await generateBatchAnalysis(
+    items.map((item, index) => ({
+      ...classifiedItems[index],
+      metadata: item.metadata ?? {},
+    })),
+  );
 
   return {
     items: classifiedItems.map((item, lineIndex) => ({
@@ -267,5 +459,6 @@ export async function classifyFeedbackBatch(items: string[]) {
       ...item,
     })),
     summary,
+    analysis,
   };
 }

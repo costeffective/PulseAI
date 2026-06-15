@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { classifyFeedbackBatch } from "@/lib/gemini";
 import { processBatchFromItems } from "@/lib/process-batch";
 import { generateBatchName } from "@/lib/stats";
 import { createClient } from "@/lib/supabase/server";

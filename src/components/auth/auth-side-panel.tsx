@@ -1,11 +1,11 @@
-import { BarChart3, KeyRound, Sparkles } from "lucide-react";
+import { BarChart3, KeyRound, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 
 const highlights = [
   {
-    icon: Sparkles,
+    icon: ListChecks,
     title: "AI triage in seconds",
     description: "Category, sentiment, and priority on every item.",
   },

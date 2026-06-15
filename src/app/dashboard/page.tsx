@@ -6,15 +6,18 @@ import { Inbox, Plus } from "lucide-react";
 import { BatchChatPanel } from "@/components/dashboard/BatchChatPanel";
 import { BatchInsights } from "@/components/dashboard/BatchInsights";
 import { BatchPanel } from "@/components/dashboard/BatchPanel";
+import { FeedbackOverview } from "@/components/dashboard/FeedbackOverview";
 import { FeedbackTable } from "@/components/dashboard/FeedbackTable";
 import { FilterChips } from "@/components/dashboard/FilterChips";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { NewBatchModal } from "@/components/NewBatchModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { buildFallbackAnalysis } from "@/lib/batch-analysis";
 import {
   computeBatchStats,
   EMPTY_ITEM_FILTER,
@@ -159,6 +162,12 @@ function DashboardPageContent() {
     [selectedBatch, itemFilter],
   );
 
+  const feedbackAnalysis = useMemo(() => {
+    if (!selectedBatch || selectedBatch.status !== "completed") return null;
+    if (selectedBatch.analysis) return selectedBatch.analysis;
+    return buildFallbackAnalysis(selectedBatch.items);
+  }, [selectedBatch]);
+
   const handleCategorySelect = (category: string | null) => {
     setItemFilter(
       category
@@ -269,7 +278,7 @@ function DashboardPageContent() {
   };
 
   return (
-    <div className="app-shell-bg flex min-h-full">
+    <div className="app-shell-bg flex min-h-dvh">
       {isBatchPanelOpen && !isMobile && (
         <aside className="flex w-72 shrink-0 flex-col border-r border-border/60 bg-background/80 backdrop-blur-md">
           <BatchPanel {...batchPanelProps} />
@@ -339,10 +348,16 @@ function DashboardPageContent() {
                 }
                 onSelect={handleCategorySelect}
               />
+              <FeedbackOverview
+                analysis={feedbackAnalysis}
+                status={selectedBatch.status}
+              />
               <FeedbackTable items={filteredItems} />
             </>
           )}
         </main>
+
+        <SiteFooter variant="compact" />
       </div>
 
       <Sheet

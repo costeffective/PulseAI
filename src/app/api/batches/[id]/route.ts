@@ -1,3 +1,4 @@
+import { normalizeBatchAnalysis } from "@/lib/batch-analysis";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { FeedbackItem, FeedbackMetadata } from "@/lib/types";
@@ -37,7 +38,7 @@ export async function GET(
 
   const { data: batch, error: batchError } = await supabase
     .from("batches")
-    .select("id, user_id, name, summary, status, created_at")
+    .select("id, user_id, name, summary, analysis, status, created_at")
     .eq("id", id)
     .single();
 
@@ -86,6 +87,7 @@ export async function GET(
   return NextResponse.json({
     batch: {
       ...batch,
+      analysis: normalizeBatchAnalysis(batch.analysis),
       items,
     },
   });

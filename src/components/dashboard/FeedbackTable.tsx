@@ -94,7 +94,12 @@ export function FeedbackTable({ items }: FeedbackTableProps) {
                 key={item.id}
                 type="button"
                 onClick={() => openDetail(item)}
-                className="w-full rounded-xl border border-border/70 bg-card p-4 text-left transition-colors hover:bg-muted/30"
+                className={cn(
+                  "w-full rounded-xl border p-4 text-left transition-colors hover:bg-muted/30",
+                  item.priority === "high"
+                    ? "border-amber-500/40 bg-amber-500/8 ring-1 ring-amber-500/15"
+                    : "border-border/70 bg-card",
+                )}
               >
                 <p className="font-sans text-sm font-medium leading-6 text-foreground">
                   {truncateText(item.text, 160)}
@@ -147,7 +152,11 @@ export function FeedbackTable({ items }: FeedbackTableProps) {
                 return (
                   <TableRow
                     key={item.id}
-                    className="cursor-pointer"
+                    className={cn(
+                      "cursor-pointer",
+                      item.priority === "high" &&
+                        "bg-amber-500/8 hover:bg-amber-500/12",
+                    )}
                     onClick={() => openDetail(item)}
                   >
                     <TableCell className="min-w-0 whitespace-normal px-6 py-4 align-top">

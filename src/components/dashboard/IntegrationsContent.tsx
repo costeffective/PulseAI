@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ export function IntegrationsContent() {
 
   const handleConnect = () => {
     if (!name.trim() || !spreadsheetId.trim()) {
-      setError("Add a connection name and Google Sheets URL.");
+      setError("Add a name and Google Sheets URL.");
       return;
     }
 
@@ -215,7 +216,7 @@ export function IntegrationsContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="connection-name">Connection name</Label>
+              <Label htmlFor="connection-name">Name</Label>
               <Input
                 id="connection-name"
                 value={name}
@@ -348,6 +349,8 @@ export function IntegrationsContent() {
           )}
         </div>
       </main>
+
+      <SiteFooter variant="compact" />
     </div>
   );
 }

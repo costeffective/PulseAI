@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MessageSquare, Send, Sparkles } from "lucide-react";
+import { Loader2, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -141,7 +141,7 @@ export function BatchChatPanel({
         <SheetHeader className="shrink-0 space-y-1.5 border-b border-border/60 px-6 py-5 pr-14">
           <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
-              <Sparkles className="size-4" />
+              <MessageSquare className="size-4" />
             </div>
             <div>
               <SheetTitle className="font-sans text-lg font-semibold leading-tight">
